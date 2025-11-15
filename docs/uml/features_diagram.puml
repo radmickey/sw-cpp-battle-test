@@ -1,0 +1,148 @@
+@startuml
+' Features Module - Concrete Implementations
+class "sw::features::ActionExecutorService" as C_0016728239890416061315
+class C_0016728239890416061315 {
++execute(sw::core::Unit & unit, sw::core::ActionContext & context) : bool
+__
+}
+class "sw::features::RangedAttack" as C_0011322766189690311248
+class C_0011322766189690311248 {
++RangedAttack(int minRange, int maxRange, int damage, bool requiresNoAdjacentUnits = false) : void
+..
++canExecute(const Unit & actor, const ActionCheckContext & context) : bool
+-canPerformRangedAttack(const Unit & actor, const ActionCheckContext & context) const : bool
++execute(Unit & actor, ActionContext & context) : void
+-findTargets(const Unit & actor, const ActionCheckContext & context) const : std::vector<Unit *>
+-hasNoAdjacentUnits(const Unit & actor, const ActionCheckContext & context) const : bool
+-isValidTarget(Unit * target, const Unit & actor, const Position & pos, const Position & actorPos) const : bool
+__
+-damage : int
+-maxRange : int
+-minRange : int
+-requiresNoAdjacentUnits : bool
+}
+class "sw::features::Move" as C_0003375470535856169922
+class C_0003375470535856169922 {
++Move(uint32_t moveDistance = 1) : void
+..
++canExecute(const Unit & actor, const ActionCheckContext & context) : bool
+-endMarch(Unit & actor, const Position & pos, IEventLogger & logger, uint64_t currentTick) const : void
++execute(Unit & actor, ActionContext & context) : void
+-updateUnitPosition(Unit & actor, IMap & map, const Position & newPos, const Position & oldPos, IEventLogger & logger, uint64_t currentTick) const : void
+__
+-moveDistance : uint32_t
+}
+class "sw::features::MeleeAttack" as C_0012407641239717902586
+class C_0012407641239717902586 {
++MeleeAttack(int damage) : void
+..
++canExecute(const Unit & actor, const ActionCheckContext & context) : bool
++execute(Unit & actor, ActionContext & context) : void
+-findValidTargets(const Unit & actor, const ActionCheckContext & context) const : std::vector<Unit *>
+__
+-damage : int
+}
+class "sw::features::ActionAvailabilityChecker" as C_0010075965441875301016
+class C_0010075965441875301016 {
++ActionAvailabilityChecker(sw::core::IMap * map, sw::core::IUnitManager * unitManager) : void
+..
++hasAvailableAction(const sw::core::Unit & unit) const : bool
+__
+-map : sw::core::IMap *
+-unitManager : sw::core::IUnitManager *
+}
+class "sw::features::GameContinuationChecker" as C_0007721080133597843415
+class C_0007721080133597843415 {
++GameContinuationChecker(sw::core::IUnitManager * unitManager, sw::core::IActionAvailabilityChecker * actionChecker) : void
+..
++shouldContinue() const : bool
+__
+-actionChecker : sw::core::IActionAvailabilityChecker *
+-unitManager : sw::core::IUnitManager *
+}
+class "sw::features::MapManager" as C_0013127166620023903582
+class C_0013127166620023903582 {
++createMap(uint32_t width, uint32_t height) : void
++getMap() const : sw::core::IMap *
++hasMap() const : bool
+__
+-map : std::unique_ptr<sw::core::IMap>
+}
+class "sw::features::Map" as C_0010704213268690151897
+class C_0010704213268690151897 {
++Map(uint32_t width, uint32_t height) : void
+..
++free(const sw::core::Position & pos, sw::core::UnitId id) : void
++getHeight() const : uint32_t
++getUnitsAt(const sw::core::Position & pos) const : std::vector<sw::core::UnitId>
++getWidth() const : uint32_t
++isOccupied(const sw::core::Position & pos) const : bool
++isValid(const sw::core::Position & pos) const : bool
++occupy(const sw::core::Position & pos, sw::core::UnitId id) : void
+__
+-height : uint32_t
+-occupiedCells : std::unordered_map<sw::core::Position,std::unordered_set<sw::core::UnitId>>
+-width : uint32_t
+}
+class "sw::features::DefaultUnitManager" as C_0009567896059792218318
+class C_0009567896059792218318 {
++DefaultUnitManager() : void
+..
++addUnit(std::unique_ptr<sw::core::Unit> unit) : void
++getUnit(sw::core::UnitId id) const : sw::core::Unit *
++getUnitFunction() const : std::function<sw::core::Unit *(sw::core::UnitId)>
++getUnits() const : const std::vector<std::unique_ptr<sw::core::Unit>> &
++getUnitsInRadius(const sw::core::Position & center, uint32_t radius) const : std::vector<sw::core::Unit *>
++getUnitsInRadiusFunction() const : std::function<std::vector<sw::core::Unit *> (const sw::core::Position &,uint32_t)>
++removeDeadUnits() : void
++setMap(sw::core::IMap * map) : void
+__
+-map : sw::core::IMap *
+-units : std::vector<std::unique_ptr<sw::core::Unit>>
+}
+class "sw::features::UnitSpawnValidator" as C_0001604567808692115643
+class C_0001604567808692115643 {
++UnitSpawnValidator() : void
+..
++setMap(sw::core::IMap * map) : void
++setUnitManager(sw::core::IUnitManager * unitManager) : void
++validateUnitPosition(const sw::core::Position & pos, bool occupiesCell) const : void
++validateUnitSpawn(const sw::core::Unit & unit) const : void
+__
+-map : sw::core::IMap *
+-unitManager : sw::core::IUnitManager *
+}
+class "sw::features::LifecycleService" as C_0008402695384628255762
+class C_0008402695384628255762 {
++canBeAttacked(const sw::core::Health & health) const : bool
++shouldBeRemoved(const sw::core::Health & health) const : bool
+__
+}
+class "sw::features::MovementRuleService" as C_0013266760677540124724
+class C_0013266760677540124724 {
++collectReachablePositions(const sw::core::Position & currentPos, const sw::core::IMap & map, uint32_t moveDistance, bool needsFreeCell) const : std::vector<sw::core::Position>
++findBestPosition(const std::vector<sw::core::Position> & reachablePositions, const sw::core::Position & currentPos, const std::optional<sw::core::Position> & targetPos) const : sw::core::Position
+__
+}
+class "sw::features::Hunter" as C_0001105047625818279080
+class C_0001105047625818279080 {
++Hunter(sw::core::UnitId id, sw::core::Position pos, int hp, int agility, int strength, int range) : void
+..
++initializeActions() : void
+__
+-agility : int
+-range : int
+-strength : int
+}
+class "sw::features::Swordsman" as C_0010923495533931277779
+class C_0010923495533931277779 {
++Swordsman(sw::core::UnitId id, sw::core::Position pos, int hp, int strength) : void
+..
++initializeActions() : void
+__
+-strength : int
+}
+
+'Generated with clang-uml, version 0.6.2
+'LLVM version Homebrew clang version 21.1.5
+@enduml
