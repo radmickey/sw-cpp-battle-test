@@ -1,0 +1,206 @@
+@startuml
+' Features Module - Concrete Implementations
+class "sw::features::ActionExecutorService" as C_0016728239890416061315
+class C_0016728239890416061315 {
++execute(sw::core::Unit & unit, sw::core::ActionContext & context) : bool
+__
+}
+class "sw::features::AttackAction" as C_0011394381920313888164
+class C_0011394381920313888164 {
+#performAttack(sw::core::Unit & actor, sw::core::Unit * target, int damage, sw::core::IEventLogger & logger, uint64_t currentTick) : void
+__
+}
+class "sw::features::RangedAttack" as C_0011322766189690311248
+class C_0011322766189690311248 {
++RangedAttack(int minRange, int maxRange, int damage, bool requiresNoAdjacentUnits = false) : void
+..
++canExecute(const Unit & actor, const ActionCheckContext & context) : bool
+-canPerformRangedAttack(const Unit & actor, const ActionCheckContext & context) const : bool
++execute(Unit & actor, ActionContext & context) : void
+-findTargets(const Unit & actor, const ActionCheckContext & context) const : std::vector<Unit *>
+-hasNoAdjacentUnits(const Unit & actor, const ActionCheckContext & context) const : bool
+-isValidTarget(Unit * target, const Unit & actor, const IPosition & pos, const IPosition & actorPos) const : bool
+__
+-damage : int
+-maxRange : int
+-minRange : int
+-requiresNoAdjacentUnits : bool
+}
+class "sw::features::Position2D" as C_0012592110988132115014
+class C_0012592110988132115014 {
++Position2D() = default : void
++Position2D(uint32_t x, uint32_t y) : void
+..
++operator!=(const sw::core::IPosition & other) const : bool
++operator!=(const Position2D & other) const : bool
++operator==(const sw::core::IPosition & other) const : bool
++operator==(const Position2D & other) const : bool
+..
++clone() const : std::unique_ptr<sw::core::IPosition>
++getCellsAtDistance(int32_t distance, const sw::core::IDistanceCalculator & calculator) const : std::vector<std::unique_ptr<sw::core::IPosition>>
++getCellsAtDistanceValue(int32_t distance, const sw::core::IDistanceCalculator & calculator) const : std::vector<Position2D>
++getCoordinate(int index) const : uint32_t
++getDimensionCount() const : int
++isValid(const sw::core::IMap & map) const : bool
+-tryCreateCellAtOffset(int32_t dx, int32_t dy, int32_t expectedDistance, const sw::core::IDistanceCalculator & calculator) const : std::optional<Position2D>
+__
+-coordinates : std::tuple<uint32_t,uint32_t>
+}
+class "sw::features::ChebyshevDistanceCalculator" as C_0016656411063812548459
+class C_0016656411063812548459 {
++calculate(const sw::core::IPosition & from, const sw::core::IPosition & to) const : uint32_t
+__
+}
+class "sw::features::Move" as C_0003375470535856169922
+class C_0003375470535856169922 {
++Move(uint32_t moveDistance = 1) : void
+..
++canExecute(const Unit & actor, const ActionCheckContext & context) : bool
+-endMarch(Unit & actor, const IPosition & pos, IEventLogger & logger, uint64_t currentTick) const : void
++execute(Unit & actor, ActionContext & context) : void
+-updateUnitPosition(Unit & actor, IMap & map, const IPosition & newPos, const IPosition & oldPos, IEventLogger & logger, uint64_t currentTick) const : void
+__
+-moveDistance : uint32_t
+}
+class "sw::features::MeleeAttack" as C_0012407641239717902586
+class C_0012407641239717902586 {
++MeleeAttack(int damage) : void
+..
++canExecute(const Unit & actor, const ActionCheckContext & context) : bool
++execute(Unit & actor, ActionContext & context) : void
+-findValidTargets(const Unit & actor, const ActionCheckContext & context) const : std::vector<Unit *>
+__
+-damage : int
+}
+class "sw::features::ActionAvailabilityChecker" as C_0010075965441875301016
+class C_0010075965441875301016 {
++ActionAvailabilityChecker(sw::core::IMap * map, sw::core::IUnitManager * unitManager) : void
+..
++hasAvailableAction(const sw::core::Unit & unit) const : bool
+__
+-map : sw::core::IMap *
+-unitManager : sw::core::IUnitManager *
+}
+class "sw::features::GameContinuationChecker" as C_0007721080133597843415
+class C_0007721080133597843415 {
++GameContinuationChecker(sw::core::IUnitManager * unitManager, sw::core::IActionAvailabilityChecker * actionChecker) : void
+..
++shouldContinue() const : bool
+__
+-actionChecker : sw::core::IActionAvailabilityChecker *
+-unitManager : sw::core::IUnitManager *
+}
+class "sw::features::MapManager" as C_0013127166620023903582
+class C_0013127166620023903582 {
++createMap(const std::vector<uint32_t> & dimensionSizes) : void
++getMap() const : sw::core::IMap *
++hasMap() const : bool
+__
+-map : std::unique_ptr<sw::core::IMap>
+}
+class "sw::features::Map" as C_0010704213268690151897
+class C_0010704213268690151897 {
++Map(const std::vector<uint32_t> & dimensionSizes) : void
+..
++free(const sw::core::IPosition & pos, sw::core::UnitId id) : void
++getDimensionCount() const : int
++getDimensionSize(int index) const : uint32_t
++getUnitsAt(const sw::core::IPosition & pos) const : std::vector<sw::core::UnitId>
++isOccupied(const sw::core::IPosition & pos) const : bool
++isValid(const sw::core::IPosition & pos) const : bool
++occupy(const sw::core::IPosition & pos, sw::core::UnitId id) : void
+-toPosition2D(const sw::core::IPosition & pos) const : Position2D
+__
+-height : uint32_t
+-occupiedCells : std::unordered_map<Position2D,std::unordered_set<sw::core::UnitId>>
+-width : uint32_t
+}
+class "sw::features::DefaultUnitManager" as C_0009567896059792218318
+class C_0009567896059792218318 {
++DefaultUnitManager() : void
+..
++addUnit(std::unique_ptr<sw::core::Unit> unit) : void
++getUnit(sw::core::UnitId id) const : sw::core::Unit *
++getUnitFunction() const : std::function<sw::core::Unit *(sw::core::UnitId)>
++getUnits() const : const std::vector<std::unique_ptr<sw::core::Unit>> &
++getUnitsInRadius(const sw::core::IPosition & center, uint32_t radius) const : std::vector<sw::core::Unit *>
++getUnitsInRadiusFunction() const : std::function<std::vector<sw::core::Unit *> (const sw::core::IPosition &,uint32_t)>
++removeDeadUnits() : void
++setMap(sw::core::IMap * map) : void
+__
+-map : sw::core::IMap *
+-units : std::vector<std::unique_ptr<sw::core::Unit>>
+}
+class "sw::features::UnitSpawnValidator" as C_0001604567808692115643
+class C_0001604567808692115643 {
++UnitSpawnValidator() : void
+..
++setMap(sw::core::IMap * map) : void
++setUnitManager(sw::core::IUnitManager * unitManager) : void
++validateUnitPosition(const sw::core::IPosition & pos, bool occupiesCell) const : void
++validateUnitSpawn(const sw::core::Unit & unit) const : void
+__
+-map : sw::core::IMap *
+-unitManager : sw::core::IUnitManager *
+}
+class "sw::features::LifecycleService" as C_0008402695384628255762
+class C_0008402695384628255762 {
++canBeAttacked(const sw::core::IHealth & health) const : bool
++shouldBeRemoved(const sw::core::IHealth & health) const : bool
+__
+}
+class "sw::features::MovementRuleService" as C_0013266760677540124724
+class C_0013266760677540124724 {
++collectReachablePositions(const sw::core::IPosition & currentPos, const sw::core::IMap & map, uint32_t moveDistance, bool needsFreeCell) const : std::vector<std::unique_ptr<sw::core::IPosition>>
++findBestPosition(const std::vector<std::unique_ptr<sw::core::IPosition>> & reachablePositions, const sw::core::IPosition & currentPos, const sw::core::IPosition * targetPos) const : std::unique_ptr<sw::core::IPosition>
+__
+}
+class "sw::features::Hunter" as C_0001105047625818279080
+class C_0001105047625818279080 {
++Hunter(sw::core::UnitId id, sw::features::Position2D pos, int hp, int agility, int strength, int range) : void
+..
++initializeActions() : void
+__
+-agility : int
+-range : int
+-strength : int
+}
+class "sw::features::DefaultActionManager" as C_0004023770115943214504
+class C_0004023770115943214504 {
++addAction(std::unique_ptr<sw::core::IAction> action) : void
++clearActions() : void
++getActions() const : const std::vector<std::unique_ptr<sw::core::IAction>> &
++hasActions() const : bool
+__
+-actions : std::vector<std::unique_ptr<sw::core::IAction>>
+}
+class "sw::features::DefaultHealth" as C_0006651537334885289861
+class C_0006651537334885289861 {
++DefaultHealth(bool hasHp, int initialHp = 0) : void
+..
++getHp() const : int
++hasHp() const : bool
++isAlive() const : bool
++setHp(int hp) : void
++takeDamage(int damage) : void
+__
+-currentHp : int
+-hasHpFlag : bool
+}
+class "sw::features::Swordsman" as C_0010923495533931277779
+class C_0010923495533931277779 {
++Swordsman(sw::core::UnitId id, sw::features::Position2D pos, int hp, int strength) : void
+..
++initializeActions() : void
+__
+-strength : int
+}
+C_0011394381920313888164 <|-- C_0011322766189690311248
+C_0011394381920313888164 <|-- C_0012407641239717902586
+C_0010704213268690151897 o-- C_0012592110988132115014 : -occupiedCells
+C_0001105047625818279080 ..> C_0012592110988132115014
+C_0010923495533931277779 ..> C_0012592110988132115014
+
+'Generated with clang-uml, version 0.6.2
+'LLVM version Homebrew clang version 21.1.5
+@enduml

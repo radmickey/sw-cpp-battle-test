@@ -1,0 +1,57 @@
+compilation_database_dir: .
+output_directory: docs/uml
+
+diagrams:
+  core_diagram:
+    type: class
+    glob:
+      - src/Core/**/*.hpp
+      - src/Core/**/*.cpp
+    include:
+      namespaces:
+        - sw::core
+    exclude:
+      paths:
+        - src/Core/CMakeLists.txt
+    plantuml:
+      before:
+        - "' Core Module - Abstractions and Interfaces"
+        - "skinparam classAttributeIconSize 0"
+        - "skinparam classFontSize 10"
+        - "skinparam classFontStyle bold"
+      after:
+        - "hide empty members"
+        - "show class fields"
+
+  features_diagram:
+    type: class
+    glob:
+      - src/Features/**/*.hpp
+      - src/Features/**/*.cpp
+    include:
+      namespaces:
+        - sw::features
+    exclude:
+      paths:
+        - src/Features/CMakeLists.txt
+    plantuml:
+      before:
+        - "' Features Module - Concrete Implementations"
+
+  battle_classes:
+    type: class
+    glob:
+      - src/**/*.hpp
+      - src/**/*.cpp
+    include:
+      namespaces:
+        - sw::core
+        - sw::features
+        - sw::io
+    exclude:
+      paths:
+        - src/*/CMakeLists.txt
+        - src/IO/System/details/**
+    plantuml:
+      before:
+        - "' Complete Class Diagram"

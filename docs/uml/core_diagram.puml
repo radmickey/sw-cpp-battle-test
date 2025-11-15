@@ -1,0 +1,327 @@
+@startuml
+' Core Module - Abstractions and Interfaces
+skinparam classAttributeIconSize 0
+skinparam classFontSize 10
+skinparam classFontStyle bold
+abstract "sw::core::IPosition" as C_0006488179991145207556
+abstract C_0006488179991145207556 {
++~IPosition() constexpr = default : void
+..
+{abstract} +operator!=(const IPosition & other) const = 0 : bool
+{abstract} +operator==(const IPosition & other) const = 0 : bool
+..
+{abstract} +clone() const = 0 : std::unique_ptr<IPosition>
+{abstract} +getCellsAtDistance(int32_t distance, const IDistanceCalculator & calculator) const = 0 : std::vector<std::unique_ptr<IPosition>>
+{abstract} +getCoordinate(int index) const = 0 : uint32_t
+{abstract} +getDimensionCount() const = 0 : int
+{abstract} +isValid(const IMap & map) const = 0 : bool
+__
+}
+class "sw::core::ActionCheckContext" as C_0018210922968192138014
+class C_0018210922968192138014 {
++ActionCheckContext(IMap & map, std::function<Unit *(UnitId)> getUnit, std::function<std::vector<Unit *> (const IPosition &,uint32_t)> getUnitsInRadius) : void
+__
++getUnit : std::function<Unit *(UnitId)>
++getUnitsInRadius : std::function<std::vector<Unit *> (const IPosition &,uint32_t)>
++map : IMap &
+}
+class "sw::core::ActionContext" as C_0004825822224794766801
+class C_0004825822224794766801 {
++ActionContext(IMap & map, IEventLogger & logger, std::mt19937 & rng, uint64_t currentTick, std::function<Unit *(UnitId)> getUnit, std::function<std::vector<Unit *> (const IPosition &,uint32_t)> getUnitsInRadius) : void
+__
++currentTick : uint64_t
++logger : IEventLogger &
++rng : std::mt19937 &
+}
+abstract "sw::core::IMap" as C_0000197618352548875172
+abstract C_0000197618352548875172 {
++~IMap() constexpr = default : void
+..
+{abstract} +free(const IPosition & pos, UnitId id) = 0 : void
+{abstract} +getDimensionCount() const = 0 : int
+{abstract} +getDimensionSize(int index) const = 0 : uint32_t
+{abstract} +isOccupied(const IPosition & pos) const = 0 : bool
+{abstract} +isValid(const IPosition & pos) const = 0 : bool
+{abstract} +occupy(const IPosition & pos, UnitId id) = 0 : void
+__
+}
+abstract "sw::core::IEventLogger" as C_0002391115936535515030
+abstract C_0002391115936535515030 {
++~IEventLogger() constexpr = default : void
+..
+{abstract} +logMarchEnded(UnitId unitId, const IPosition & pos, uint64_t tick) = 0 : void
+{abstract} +logUnitAttacked(UnitId attackerId, UnitId targetId, uint32_t damage, uint32_t targetHp, uint64_t tick) = 0 : void
+{abstract} +logUnitDied(UnitId unitId, uint64_t tick) = 0 : void
+{abstract} +logUnitMoved(UnitId unitId, const IPosition & pos, uint64_t tick) = 0 : void
+__
+}
+abstract "sw::core::Unit" as C_0004932723151689733392
+abstract C_0004932723151689733392 {
++Unit(UnitId id, std::unique_ptr<IPosition> pos, std::unique_ptr<IHealth> health, std::unique_ptr<IActionManager> actionManager, std::unique_ptr<ILifecycleService> lifecycle, std::unique_ptr<IMovementRuleService> movementRule, std::unique_ptr<IActionExecutorService> actionExecutor, const UnitProperties & properties = UnitProperties{}) : void
++~Unit() = default : void
+..
++act(ActionContext & context) : void
+#addAction(std::unique_ptr<IAction> action) : void
++canAct() const : bool
++canBeAttacked() const : bool
++canMove() const : bool
++clearTargetPosition() : void
++getActions() const : const std::vector<std::unique_ptr<IAction>> &
++getHp() const : int
++getId() const : UnitId
++getMovement() : Movement &
++getMovement() const : const Movement &
++getPosition() const : const IPosition &
++getTargetPosition() const : const IPosition *
++hasActions() const : bool
++hasHp() const : bool
+{abstract} +initializeActions() = 0 : void
++isAlive() const : bool
++isFlying() const : bool
++isInRangedAttackRange(uint32_t distance, int minRange, int maxRange) const : bool
++occupiesCell() const : bool
++setActionExecutor(std::unique_ptr<IActionExecutorService> executor) : void
++setHp(int hp) : void
++setLifecycle(std::unique_ptr<ILifecycleService> lifecycle) : void
++setPosition(std::unique_ptr<IPosition> pos) : void
++setTargetPosition(std::unique_ptr<IPosition> target) : void
++shouldBeRemoved() const : bool
++takeDamage(int damage) : void
+__
+#actionExecutor : std::unique_ptr<IActionExecutorService>
+#actionManager : std::unique_ptr<IActionManager>
+#health : std::unique_ptr<IHealth>
+#id : UnitId
+#lifecycle : std::unique_ptr<ILifecycleService>
+#movement : Movement
+}
+class "sw::core::IDistanceCalculator" as C_0006302066142448381301
+class C_0006302066142448381301 {
+__
+}
+class "sw::core::GameTime" as C_0010301530904680242886
+class C_0010301530904680242886 {
+-GameTime() : void
++GameTime(uint64_t initialTick) : void
++GameTime(const GameTime &) = deleted : void
+..
++operator=(const GameTime &) = deleted : GameTime &
+..
++getCurrentTick() const : uint64_t
+{static} +getInstance() : const GameTime &
+{static} +getMutableInstance() : GameTime &
++nextTick() : void
++reset() : void
+{static} +resetInstance() : void
++setTick(uint64_t tick) : void
+__
+-currentTick : uint64_t
+{static} -instance : GameTime *
+}
+abstract "sw::core::IGameContinuationChecker" as C_0013518549816773163541
+abstract C_0013518549816773163541 {
++~IGameContinuationChecker() constexpr = default : void
+..
+{abstract} +shouldContinue() const = 0 : bool
+__
+}
+abstract "sw::core::IMapManager" as C_0007458410791953817432
+abstract C_0007458410791953817432 {
++~IMapManager() constexpr = default : void
+..
+{abstract} +createMap(const std::vector<uint32_t> & dimensionSizes) = 0 : void
+{abstract} +getMap() const = 0 : IMap *
+{abstract} +hasMap() const = 0 : bool
+__
+}
+abstract "sw::core::IUnitManager" as C_0013881751628026316112
+abstract C_0013881751628026316112 {
++~IUnitManager() constexpr = default : void
+..
+{abstract} +addUnit(std::unique_ptr<Unit> unit) = 0 : void
+{abstract} +getUnit(UnitId id) const = 0 : Unit *
+{abstract} +getUnitFunction() const = 0 : std::function<Unit *(UnitId)>
+{abstract} +getUnits() const = 0 : const std::vector<std::unique_ptr<Unit>> &
+{abstract} +getUnitsInRadius(const IPosition & center, uint32_t radius) const = 0 : std::vector<Unit *>
+{abstract} +getUnitsInRadiusFunction() const = 0 : std::function<std::vector<Unit *> (const IPosition &,uint32_t)>
+{abstract} +removeDeadUnits() = 0 : void
+{abstract} +setMap(IMap * map) = 0 : void
+__
+}
+abstract "sw::core::IUnitSpawnValidator" as C_0002381709608970870765
+abstract C_0002381709608970870765 {
++~IUnitSpawnValidator() constexpr = default : void
+..
+{abstract} +setMap(IMap * map) = 0 : void
+{abstract} +setUnitManager(IUnitManager * unitManager) = 0 : void
+{abstract} +validateUnitPosition(const IPosition & pos, bool occupiesCell) const = 0 : void
+{abstract} +validateUnitSpawn(const Unit & unit) const = 0 : void
+__
+}
+class "sw::core::GameSimulator" as C_0003635640190189793598
+class C_0003635640190189793598 {
++GameSimulator(IEventLogger & eventLogger, GameTime & gameTime = GameTime::getMutableInstance(), std::unique_ptr<IGameContinuationChecker> continuationChecker = nullptr) : void
++~GameSimulator() : void
+..
++createMap(const std::vector<uint32_t> & dimensionSizes, std::unique_ptr<IUnitManager> unitManager, std::unique_ptr<IMapManager> mapManager, std::unique_ptr<IUnitSpawnValidator> spawnValidator) : void
+-getActionContext() : ActionContext &
++getUnit(UnitId id) const : Unit *
+-processTick() : void
++setContinuationChecker(std::unique_ptr<IGameContinuationChecker> continuationChecker) : void
++setUnitTargetPosition(UnitId id, std::unique_ptr<IPosition> target) : void
++shouldContinue() : bool
++simulate() : void
++spawnUnit(std::unique_ptr<Unit> unit) : void
+__
+-cachedActionContext : std::optional<ActionContext>
+-continuationChecker : std::unique_ptr<IGameContinuationChecker>
+-eventLogger : IEventLogger *
+-gameTime : GameTime &
+-mapManager : std::unique_ptr<IMapManager>
+-rng : std::mt19937
+-spawnValidator : std::unique_ptr<IUnitSpawnValidator>
+-unitManager : std::unique_ptr<IUnitManager>
+}
+abstract "sw::core::IHealth" as C_0012250360901341769551
+abstract C_0012250360901341769551 {
++~IHealth() constexpr = default : void
+..
+{abstract} +getHp() const = 0 : int
+{abstract} +hasHp() const = 0 : bool
+{abstract} +isAlive() const = 0 : bool
+{abstract} +setHp(int hp) = 0 : void
+{abstract} +takeDamage(int damage) = 0 : void
+__
+}
+abstract "sw::core::IMovementRuleService" as C_0009276482760230995554
+abstract C_0009276482760230995554 {
++~IMovementRuleService() constexpr = default : void
+..
+{abstract} +collectReachablePositions(const IPosition & currentPos, const IMap & map, uint32_t moveDistance, bool needsFreeCell) const = 0 : std::vector<std::unique_ptr<IPosition>>
+{abstract} +findBestPosition(const std::vector<std::unique_ptr<IPosition>> & reachablePositions, const IPosition & currentPos, const IPosition * targetPos) const = 0 : std::unique_ptr<IPosition>
+__
+}
+class "sw::core::Movement" as C_0015009710673234826674
+class C_0015009710673234826674 {
++Movement(std::unique_ptr<IPosition> pos, std::unique_ptr<IMovementRuleService> rule, bool canMove, bool isFlying = false, bool occupiesCell = true) : void
+..
++calculateNextPosition(const IMap & map, uint32_t moveDistance, bool needsFreeCell) const : std::unique_ptr<IPosition>
++canMove() const : bool
++clearTargetPosition() : void
++getPosition() const : const IPosition &
++getTargetPosition() const : const IPosition *
++hasTarget() const : bool
++isFlying() const : bool
++isTargetReached() const : bool
++occupiesCell() const : bool
++setMovementRule(std::unique_ptr<IMovementRuleService> rule) : void
++setPosition(std::unique_ptr<IPosition> pos) : void
++setTargetPosition(std::unique_ptr<IPosition> target) : void
+__
+-canMoveFlag : bool
+-isFlyingFlag : bool
+-movementRule : std::unique_ptr<IMovementRuleService>
+-occupiesCellFlag : bool
+-position : std::unique_ptr<IPosition>
+-targetPosition : std::unique_ptr<IPosition>
+}
+abstract "sw::core::IAction" as C_0005814089780677918486
+abstract C_0005814089780677918486 {
++~IAction() constexpr = default : void
+..
+{abstract} +canExecute(const Unit & actor, const ActionCheckContext & context) = 0 : bool
+{abstract} +execute(Unit & actor, ActionContext & context) = 0 : void
+__
+}
+abstract "sw::core::IActionManager" as C_0013256905832312134408
+abstract C_0013256905832312134408 {
++~IActionManager() constexpr = default : void
+..
+{abstract} +addAction(std::unique_ptr<IAction> action) = 0 : void
+{abstract} +clearActions() = 0 : void
+{abstract} +getActions() const = 0 : const std::vector<std::unique_ptr<IAction>> &
+{abstract} +hasActions() const = 0 : bool
+__
+}
+abstract "sw::core::IActionExecutorService" as C_0005356450265975470012
+abstract C_0005356450265975470012 {
++~IActionExecutorService() constexpr = default : void
+..
+{abstract} +execute(Unit & unit, ActionContext & context) = 0 : bool
+__
+}
+abstract "sw::core::ILifecycleService" as C_0014809351320005079155
+abstract C_0014809351320005079155 {
++~ILifecycleService() constexpr = default : void
+..
+{abstract} +canBeAttacked(const IHealth & health) const = 0 : bool
+{abstract} +shouldBeRemoved(const IHealth & health) const = 0 : bool
+__
+}
+class "sw::core::UnitProperties" as C_0001144603572960060725
+class C_0001144603572960060725 {
++UnitProperties(bool canMove = true, bool hasHp = true, bool isFlying = false, bool occupiesCell = true, int initialHp = 0) : void
+__
++canMove : bool
++hasHp : bool
++initialHp : int
++isFlying : bool
++occupiesCell : bool
+}
+C_0006488179991145207556 ..> C_0006302066142448381301
+C_0006488179991145207556 ..> C_0000197618352548875172
+C_0018210922968192138014 --> C_0000197618352548875172 : +map
+C_0018210922968192138014 --> C_0006488179991145207556 : +getUnitsInRadius
+C_0004825822224794766801 ..> C_0000197618352548875172
+C_0004825822224794766801 ..> C_0006488179991145207556
+C_0004825822224794766801 --> C_0002391115936535515030 : +logger
+C_0018210922968192138014 <|-- C_0004825822224794766801
+C_0000197618352548875172 ..> C_0006488179991145207556
+C_0002391115936535515030 ..> C_0006488179991145207556
+C_0004932723151689733392 ..> C_0006488179991145207556
+C_0004932723151689733392 ..> C_0009276482760230995554
+C_0004932723151689733392 ..> C_0001144603572960060725
+C_0004932723151689733392 ..> C_0005814089780677918486
+C_0004932723151689733392 ..> C_0004825822224794766801
+C_0004932723151689733392 o-- C_0012250360901341769551 : #health
+C_0004932723151689733392 o-- C_0015009710673234826674 : #movement
+C_0004932723151689733392 o-- C_0013256905832312134408 : #actionManager
+C_0004932723151689733392 o-- C_0014809351320005079155 : #lifecycle
+C_0004932723151689733392 o-- C_0005356450265975470012 : #actionExecutor
+C_0010301530904680242886 --> C_0010301530904680242886 : -instance
+C_0007458410791953817432 ..> C_0000197618352548875172
+C_0013881751628026316112 ..> C_0000197618352548875172
+C_0013881751628026316112 ..> C_0004932723151689733392
+C_0013881751628026316112 ..> C_0006488179991145207556
+C_0002381709608970870765 ..> C_0000197618352548875172
+C_0002381709608970870765 ..> C_0013881751628026316112
+C_0002381709608970870765 ..> C_0004932723151689733392
+C_0002381709608970870765 ..> C_0006488179991145207556
+C_0003635640190189793598 ..> C_0004932723151689733392
+C_0003635640190189793598 ..> C_0006488179991145207556
+C_0003635640190189793598 o-- C_0007458410791953817432 : -mapManager
+C_0003635640190189793598 o-- C_0013881751628026316112 : -unitManager
+C_0003635640190189793598 --> C_0002391115936535515030 : -eventLogger
+C_0003635640190189793598 --> C_0010301530904680242886 : -gameTime
+C_0003635640190189793598 o-- C_0013518549816773163541 : -continuationChecker
+C_0003635640190189793598 o-- C_0002381709608970870765 : -spawnValidator
+C_0003635640190189793598 o-- C_0004825822224794766801 : -cachedActionContext
+C_0009276482760230995554 ..> C_0006488179991145207556
+C_0009276482760230995554 ..> C_0000197618352548875172
+C_0015009710673234826674 ..> C_0000197618352548875172
+C_0015009710673234826674 o-- C_0006488179991145207556 : -position
+C_0015009710673234826674 o-- C_0006488179991145207556 : -targetPosition
+C_0015009710673234826674 o-- C_0009276482760230995554 : -movementRule
+C_0005814089780677918486 ..> C_0004932723151689733392
+C_0005814089780677918486 ..> C_0018210922968192138014
+C_0005814089780677918486 ..> C_0004825822224794766801
+C_0013256905832312134408 ..> C_0005814089780677918486
+C_0005356450265975470012 ..> C_0004932723151689733392
+C_0005356450265975470012 ..> C_0004825822224794766801
+C_0014809351320005079155 ..> C_0012250360901341769551
+hide empty members
+show class fields
+
+'Generated with clang-uml, version 0.6.2
+'LLVM version Homebrew clang version 21.1.5
+@enduml
